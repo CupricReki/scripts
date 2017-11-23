@@ -1,0 +1,58 @@
+#!/usr/bin/ksh -x
+
+date=`/bin/date "+%Y-%m-%d%n"`
+
+SEARCHCRITERIA1="goldwing"
+EMAIL="traviso@infohammer.net"
+
+anchorage_process () {
+    x=anchorage
+wget "http://$x.craigslist.org/search/?areaID=678&catAbb=sss&query=$SEARCHCRITERIA1&sort=priceasc&format=rss" -O /tmp/$x.index.html
+cat /tmp/$x.index.html | egrep "\<title\>|\<link\>" | grep -v dc: | sed '/link/G' | sed 's/<link>//g' | sed 's/<\/link>//g' | sed 's/<title>//g' | sed 's/<\/title>//g' | sed 's/<\!\[CDATA\[//g' | sed 's/\]\]>//g' > /tmp/$x.index2.txt
+}
+
+fairbanks_process () {
+    y=fairbanks
+wget "http://$y.craigslist.org/search/?areaID=678&catAbb=sss&query=$SEARCHCRITERIA1&sort=priceasc&format=rss" -O /tmp/$y.index.html
+cat /tmp/$y.index.html | egrep "\<title\>|\<link\>" | grep -v dc: | sed '/link/G' | sed 's/<link>//g' | sed 's/<\/link>//g' | sed 's/<title>//g' | sed 's/<\/title>//g' | sed 's/<\!\[CDATA\[//g' | sed 's/\]\]>//g' > /tmp/$y.index2.txt
+}
+
+kenai_process () {
+    z=kenai
+wget "http://$z.craigslist.org/search/?areaID=678&catAbb=sss&query=$SEARCHCRITERIA1&sort=priceasc&format=rss" -O /tmp/$z.index.html
+cat /tmp/$z.index.html | egrep "\<title\>|\<link\>" | grep -v dc: | sed '/link/G' | sed 's/<link>//g' | sed 's/<\/link>//g' | sed 's/<title>//g' | sed 's/<\/title>//g' | sed 's/<\!\[CDATA\[//g' | sed 's/\]\]>//g' > /tmp/$z.index2.txt
+}
+
+banner_process () {
+    FILENAME=$SEARCHCRITERIA1.txt
+touch /tmp/$FILENAME
+echo "Craigslist Search routine for $date" >>  /tmp/$FILENAME
+echo "Search Criteria: $SEARCHCRITERIA1" >> /tmp/$FILENAME
+echo >> /tmp/$FILENAME 
+cat /tmp/$x.index2.txt >> /tmp/$FILENAME
+echo >> /tmp/$FILENAME
+cat /tmp/$y.index2.txt >> /tmp/$FILENAME
+echo >> /tmp/$FILENAME
+cat /tmp/$z.index2.txt >> /tmp/$FILENAME
+}
+
+cleanup_process () {
+    rm /tmp/*.index.html
+    rm /tmp/*.index2.txt
+    rm /tmp/$SEARCHCRITERIA1.txt
+}
+
+mail_process () {
+    /usr/bin/mail -s "[ Craigslist SearchBot: $SEARCHCRITERIA1 ]" "$EMAIL" < /tmp/$FILENAME
+}
+
+#
+#
+anchorage_process
+fairbanks_process
+kenai_process
+banner_process
+mail_process
+cleanup_process
+
+exit 1
